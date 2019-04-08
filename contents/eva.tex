@@ -1,0 +1,293 @@
+\chapter{Experimenty\label{cha:exp}}
+
+V rámci práce je potrebné vykonať aj experimenty, ktoré majú dvojaký účel. Experimenty slúžia na zbieranie dát o pohyboch kurzora pri práci v rôznych prostrediach a pri vykonávaní rôznych úloh. Zároveň ale slúžia aj na vyhodnotenie presnosti navrhovanej metódy.
+
+Hypotézy pred vykonaním experimentov a ich evaluácie:
+\begin{enumerate}
+\item celková dĺžka pohybu môže byť vypočítaná zo znalosti lokálneho maxima rýchlosti a jeho parametrov,
+\item metóda je účinnejšia pre počítačovú myš ako pre touchpad z dôvodu jednoduchšieho priebehu pohybu v prípade počítačovej myši,
+\item metóda je účinnejšia v prípade použitia známeho ovládacieho zariadenia.
+\end{enumerate}
+
+Pred spustením časti experimentu, kde prebieha samotné sledovanie a zaznamenávanie pohybu kurzora po obrazovke, je používateľovi zobrazený formulár s krátkymi otázkami. Informácie získané týmto formulárom majú pomôcť pri zatriedení používateľa podľa jeho veku, pohlavia, úrovne skúsenosti s používaním ovládacích zariadení resp. počítača.
+
+Ihneď na začiatku experimentov je účastníkovi, v prípade že experiment vykonáva po prvý raz, zobrazený formulár, kde vyplní informácie slúžiace na zaradenie človeka do skupiny. Ůčastníkovi sú položené nasledovné otázky:
+\begin{itemize}
+\item Aké je tvoje pohlavie?
+\item Aký je tvoj vek?
+\item Koľko rokov aktívne používaš počítač?
+\item Ohodnoť svoje skúsenosti na stupnici od 1 do 5.
+\item Aké ovládacie zariadenie používaš? touchpad/myš
+\end{itemize}
+
+\paragraph*{Hľadanie súvislostí medzi charakteristikami pohybu}
+Na základe výsledkov súvisiacich prác spomenutých v analýze charakteristík pohybu predpokladáme lineárnu závislosť dĺžky pohybu od jeho charakteristík. Neexistuje však žiadna štúdia a dôkaz o povahe tohto problému, teda či sú závislosti lineárne. Preto nemôžeme vylučovať prítomnosť zakrivenia regresnej priamky, ktoré by napovedalo vhodnosť použitia polynomiálnej regresie. Predpokladáme, že v takom prípade by bolo vhodné použiť polynóm nízkeho stupňa, aby sme sa vyhli pretrénovaniu resp. estimovaniu regresnej krivky, ktorá by príliš alebo úplne korešpondovala s trénovacími dátami, a tým by znižovala presnosť predikcie podľa nových doposiaľ nepoznaných dát.
+
+\paragraph{Meranie času vykonávania pohybu až po samotné kliknutie}
+Vzľadom na to, že cieľom práce je zdanlivo znížiť odozvu vykreslenia webovej stránky v prehliadači pre zlepšenie používateľského zážitku, počas experimentu bude zbieraný aj časový údaj, ktorý hovorí o tom, koľko času uplynie\footnote{Čas medzi nájdením cieľa a kliknutím sa pohybuje od 200ms do 400ms. "Test your click speed - InstantClick." http://instantclick.io/click-test. Accessed 8 May. 2017.} medzi nájdením cieľa kurzorom a skutočným kliknutím. Podarí sa tak zistiť, koľko celkového času vieme získať predikciou cieľa záujmu spolu s časom potrebným na spustenie akcie.
+
+\section{Overenie princípu metódy \label{sec:exp-verify}}
+Pred vykonaním experimentov na vyhodnotenie účinnosti metódy sme sa rozhodli vykonať jednoduchý experiment, ktorý má slúžiť ja jednoduché overenie hypotézy, že so znalosťou globálneho maxima v profile rýchlosti pohybu dokážeme regresnou analýzou vypočítať celkovú dĺžku pohybu. Za týmto účelom bola vytvorená jednoduchá obrazovka (viď obr. \ref{fig:proposal-test}), ktorá obsahovala 9 cieľov, na ktoré je možné kliknúť. Ciele boli rozmiestnené tak, aby účastník experimentu vykonal pohyb v dvoch rôznych dĺžkach a ôsmych rôznych smeroch.
+
+Tento jednoduchý experiment vykonávala iba jedna osoba. Účastník vykonal experiment celkom 7 krát. Z dát bolo vybraných náhodných 50\% pohybov. Ostatné boli použité na vytvorenie štyroch predikčných modelov. Prvý predikčný model (\#1) bol založený na jednoduchej lineárnej regresii (vzťah \ref{eq:base-premise}) berúcej do ohľadu iba vrchol rýchlosti. Druhý predikčný model (\#2) tiež berie do úvahy iba vrchol rýchlosti, no je vypočítaný ako polynóm druhého stupňa. Tretí model (\#3) je predikčný model lineárnej regresie, ktorý ale okrem vrcholu rýchlosti bral do úvahy aj vzdialenosť tohto vrcholu od začiatku a čas potrebný na dosiahnutie vrcholu. Štvrtý predikčný model (\#4) berie do úvahy vzdialenosť a čas, rovnako ako tretí model, no je počítaný ako viacnásobný polynomiálny regresor tretieho stupňa. Všetky modely sú estimované metódou najmenších štvorcov.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/proposal-test}
+\caption{Obrazovka experimentu na jednoduché overenie metódy obsahuje jeden stredový bod a 8 bodov uložených v rôznych vzdialenostiach a smeroch. \label{fig:proposal-test}}
+\end{figure}
+
+\begin{table}[]
+\centering
+\begin{tabular}{ccc}
+\multicolumn{1}{l}{\textbf{Model}} & \multicolumn{1}{l}{\textbf{Priemerná presnosť {[}\%{]}}} & \multicolumn{1}{l}{\textbf{Priemerná chyba {[}px{]}}} \\ \hline
+\#1                                & 54.43\%                                                  & 113                                                   \\
+\#2                                & 37.69\%                                                  & 137                                                   \\
+\#3                                & 76.38\%                                                  & 62                                                    \\
+\#4                                & 79.09\%                                                  & 63                                                   
+\end{tabular}
+\caption{Porovnanie predikčných modelov. Z výsledkov je možné tvrdiť, že znalosťou o vzdialenosti a rýchlosti dosiahnutia vrcholu rýchlosti bola značne zlepšená presnosť predikcie.}
+\label{tab:proposal-test}
+\end{table}
+
+Vybraných 50\% validačných pohybov bolo použitých na vyhodnotenie presnosti predikcie natrénovaných modelov a ich porovnanie. Najlepšie výsledky, ktoré je možné vidieť v tabuľke \ref{tab:proposal-test}, dosiahol štvrtý model a síce viacnásobná polynomiálna regresia. Výsledky považujeme za pomerne dobré, pretože najlepšia dosiahnutá priemerná presnosť bola 79.09\%, pri priemernej miere dokončenia pohybu 31.46\%. Priemerná absolútna chyba v predikovanej vzdialenosti bola 63 obrazových bodov, čo umožňuje v prostredí s malou hustotou potenciálnych cieľov vykonať pomerne presnú predikciu. Mierne lepšie výsledky polynomiálnej regresie naznačujú, že závislosť charakteristík pohybu od jeho celkovej dĺžky nemusí byť lineárna.
+
+Dobré výsledky predikcie pripisujeme malej diverzite vzdialeností cieľov. Ich rozloženie v priestore je možné vidieť na obrázku \ref{fig:exp1-3d-viz}, ktorý jasne dokazuje vytváranie zhlukov pohybov s podobnými charakteristikami a dĺžkami.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/exp1-3d-viz}
+\caption{3D vizualizácia pohybov dokazuje, že dáta je možné dobre separovať, pretože vytvárajú zhluky. Intenzita zafarbenia znázorňuje celkovú dĺžku pohybu. \emph{X} - vrchol rýchlosti, \emph{Y} - čas ako rýchlo bol vrchol dosiahnutý, \emph{Z} - vzdialenosť dosiahnutia vrcholu od počiatočného bodu.\label{fig:exp1-3d-viz}}
+\end{figure}
+
+\section{Experiment 1\label{sec:exp1}}
+Prvý experiment je rozdelený na tri samostatné časti. Prvá časť experimentu slúži na kalibráciu modelu pre používateľa, je teda zameraná na vykonávanie priamočiarých pohybov v rôznych smeroch a na rôzne vzdialenosti. Zvyšné dve časti sú zamerané na vykonávanie úloh podľa scenára v reálnom prostredí známom pre každého účastníka experimentu. Ide o prostredie internetového vyhľadávača a internetového denníka.
+
+Experimentu sa zúčastnilo 20 ľudí.
+
+\subsection{Experiment 1 - časť prvá}
+Prvý experiment slúži na počiatočnú kalibráciu predikčného modelu v laboratórnych podmienkach tak, aby boli zaznamenané vlastnosti pohybov myši typické pre každého účastníka experimentu. Tieto dáta sú následne využívané na predikciu pohybu v ostatných experimentoch.
+
+Počas vykonávania všetkých experimentov je prostredie experimentu zobrazené na celú obrazovku počítača, aby nebol subjekt rozptylovaný vonkajšími vyplyvmi.
+
+\paragraph{Pracovné prostredie}
+Experiment pozostáva z bielej obrazovky, na ktorej sú rozmiestnené klikateľné objekty v tvare kruhu (viď Obr. \ref{fig:exp1-screen}). V strede obrazovky je umiestnený jeden farebne odlíšený bod, ktorý spúšťa a ukončuje jednotlivé úlohy vykonávané subjektom experimentu.
+
+Ostatné klikateľné kruhy sú rozmiestnené po obvodoch viacerých pomyslených kružníc s odlišnými veľkosťami priemeru. Rozmiestnenie týchto objektov simuluje potrebu vykonávať pohyb myšou v 8 rôznych smeroch a na 5 rôznych vzdialeností.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/exp1-screen}
+\caption{Obrazovka prvej časti experimentu obsahuje jeden stredový bod a 36 bodov uložených v rôznych vzdialenostiach a smeroch. Úlohou účastníka je klikanie na zvýraznené body. \label{fig:exp1-screen}}
+\end{figure}
+
+\paragraph{Úlohy účastníka experimentu}
+Účastník spustí experiment kliknutím na zelený bod. Následne mu je náhodne vybraný jeden bod, ktorý je zvýraznený animáciou. Úlohou účastníka je na daný bod kliknúť. Pohyb k bodu je zaznamenávaný, až kým účasník na daný bod neklikne. Ihneď po kliknutí je zvýraznený stredový zelený bod a začína sa zaznamenávanie nového pohybu opačným smerom, teda do stredu obrazovky. Po kliknutí na zelený bod je opäť vybraný náhodný bod. Toto sa opakuje, kým nie sú v náhodnej postupnosti vybrané všetky body na obrazovke. 
+
+\subsection{Experiment 1 - časť druhá \label{sec:exp1-1}}
+Druhý experiment simuluje reálne prostredie, ktoré je pre účastníka experimentu známe a obsahuje klikateľné objekty s malou hustotou. Na predikciu pohybov je vužívaný model, ktorý bol zostrojený v predošlej časti experimentu. Model je zároveň neustále prepočítavaný s novými získanými údajmi.
+
+\paragraph{Pracovné prostredie}
+Experiment prebieha na stránkach, ktoré sú kópiou webového prostredia vyhľadávača Google (viď Obr. \ref{fig:exp2-screen}). Každému účastníkovi sú zobrazované rovnaké výsledky vyhľadávania, aby bola zachovaná možnosť porovnávať dáta medzi jednotlivými používateľmi.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/exp2-screen}
+\caption{Druhá časť experimentu sa vykonáva v prostredí vyhľadávača Google \label{fig:exp2-screen}}
+\end{figure}
+
+\paragraph{Úlohy účastníka experimentu}
+Účastníkovi je zobrazená prázdna obrazovka obsahujúca tlačidlo v strede spodnej časti obrazovky. Toto tlačidlo slúži na nastavenie východiskovej polohy kurzora. Kliknutie na tlačidlo zaháji experiment. Následne používateľ vykonáva úlohy podľa nasledujúceho scenára:
+
+{\small\setstretch{1.0}
+\begin{enumerate}
+\item Zobrazí sa úvodná stránka vyhľadávača Google, ktorá obsahuje vyhľadávacie logo, vyhľadávacie pole a tlačidlo na zahájenie vyhľadávania. Účastník je vyzvaný na zadanie vyhľadávacieho výrazu “cat breeds” a uskutočnenie vyhľadávania kliknutím na tlačidlo “Hľadať”.
+\item Účastník je vyzvaný kliknúť na tretí výsledok vyhľadávania. Reakciou na toto kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný kliknúť na výsledok vyhľadávania, ktorého nadpis obsahuje frázu “breed collection”. Reakciou na toto kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný kliknúť na plemeno “Bengal cat” v zozname plemien s obrázkami. Reakciou na toto kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný kliknúť na náhľad obrázku zvýraznený červeným rámčekom. Po kliknutí je otvorený detail tohto obrázku. 
+\item Účastník je vyzvaný zavrieť detail obrázku. Po kliknutí na ikonu uzatvárania detailu je zobrazená obrazovka s výsledkami vyhľadávania.
+\item Účastník je vyzvaný zobraziť viac obrázkov, ktoré súvisia s vyhľadávaním. Účastník má dve možnosti, medzi ktorými sa môže slobodne a bez nápovedy rozhodnúť. Po kliknutí je subjekt presmerovaný na obrazovku s obrázkami.
+\item Účastník je vyzvaný kliknúť na prvý obrázok v prvej rade. Po kliknutí sa zobrazí detail obrázku.
+\item Účastník je vyzvaný zavrieť detail obrázku kliknutím na ikonku X v pravom hornom rohu elementu. Po kliknutí sa detail obrázku zavrie.
+\item Účastník je vyzvaný otvoriť panel nástrojov. Reakciou je zobrazenie filtra obrázkov.
+\item Účastník je vyzvaný nastaviť filter na obrázky kreslené čiarami.
+\item Účastník je vyzvaný zobraziť detail tretieho obrázku v druhom rade. Po kliknutí je zobrazený detail obrázku.
+\item Účastník je vyzvaný zavrieť detail obrázku kliknutím na ikonu v pravej hornej časti obrazovky. Experiment končí.
+\end{enumerate}
+}
+
+\subsection{Experiment 1 - časť tretia}
+Tretí experiment simuluje reálne prostredie, ktoré je pre účastníka experimentu známe a obsahuje klikateľné objekty s vyššou hustotou. Na predikciu pohybov je vužívaný model, ktorý bol zostrojený v predošlých častiach experimentu. Model je zároveň neustále prepočítavaný s novými získanými údajmi.
+
+\paragraph{Pracovné prostredie}
+Experiment prebieha na stránkach, ktoré sú kópiou internetového denníka (viď Obr. \ref{fig:exp2-screen}). Každému účastníkovi je zobrazovaná rovnaká stránka.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/exp3-screen}
+\caption{Tretia časť experimentu sa vykonáva v prostredí internetového denníka \label{fig:exp3-screen}}
+\end{figure}
+
+\paragraph{Úlohy účastníka experimentu}
+Účastníkovi je zobrazená prázdna obrazovka obsahujúca tlačidlo v strede obrazovky. Tlačidlo slúži na nastavenie východiskovej polohy kurzora. Kliknutie na tlačidlo zaháji experiment. Následne používateľ vykonáva úlohy podľa nasledujúceho scenára:
+
+{\small\setstretch{1.0}
+\begin{enumerate}
+\item Zobrazí sa úvodná stránka internetového denníka. Účastník je vyzvaný zobraziť najdôležitejšie správy kliknutím na hlavičku karty s názvom “Najdôležitejšie”. Po kliknutí sa zobrazia správy v obsahu sekcie.
+\item Účastník je vyzvaný kliknúť na klikateľnú časť tretej správy zo sekcie “Najdôležitejšie”. Reakciou na kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný kliknúť a štvrtý najčítanejší článok za posledných 24 hodín. Reakciou na kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný zobraziť najčítanejšie články za posledné tri dni. Po kliknutí su v sekcii najčítanejších článkov zobrazené nové články v zozname.
+\item Účastník je vyzvaný kliknúť na tretí článok v zozname najčítanejších článkov. Reakciou na kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný kliknúť na meno autora “Dávid Bondra”. Reakciou na kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný uložiť článok autora “Dávid Bondra” do záložiek kliknutím na ikonku zobrazenú v pravej hornej časti elementu s článkom. Po kliknutí je zobrazené dialógové okno s formulárom. 
+\item Účastník je vyzvaný dialógové okno zavrieť kliknutím na ikonku krížika v pravej hornej časti obrazovky. Po kliknutí dialógové okno zmizne z orbazovky.
+\item Účastník je vyzvaný kliknúť na titulok článku, ktorý začína na “Fotograf Ján Husár”. Reakciou na kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný uložiť článok z predošlého kroku do záložiek kliknutím na ikonku zobrazenú v pravej hornej časti elementu s článkom. Po kliknutí je zobrazené dialógové okno s formulárom.
+\item Účastník je vyzvaný dialógové okno zavrieť kliknutím na ikonku krížika v pravej hornej časti obrazovky. Po kliknutí dialógové okno zmizne z orbazovky.
+\item Účastník je vyzvaný kliknúť na druhý obrázok v sekcii “Cynická obluda”. Reakciou na kliknutie je vizuálna spätná väzba.
+\item Účastník je vyzvaný kliknúť na ikonu bielej šípky smerujúcej hore v červenom štvorci. Ikona je umiestnená v pravej dolej časti obrazovky. Po kliknutí je obrazovka presunutá na vrchnú časť webovej stránky.
+\item Účastník je vyzvaný kliknúť na tlačidlo “Prihlásiť” v pravej hornej časti obrazovky. Po kliknutí je zobrazený prihlasovací formulár.
+\item Účastník je vyzvaný kliknúť na vstupné pole “Váš e-mail”. Po kliknutí je pole automaticky vyplnené.
+\item Účastník je vyzvaný kliknúť na vstupné pole “Vaše heslo”. Po kliknutí je pole automaticky vyplnené.
+\item Účastník je vyzvaný kliknúť na tlačidlo prihlásiť. Po kliknutí je s časovým oneskorením formulár zavretý.Experiment končí.
+
+\end{enumerate}
+}
+
+\subsection{Nedostatky experimentu 1}
+Zámerom experimentu bolo všetkým účastníkom poskytnúť rovnaké podmienky, či už v ohľade na používaný hardvér vrátane ovládacieho zariadenia, alebo v ohľade na postupnosť vykonávania úloh. Takto stanovené rovnaké podmienky mali zabezpečiť maximálnu informačnú hodnotu v porovnávaní výsledkov jednotlivých účastníkov experimentu.
+
+Spočiatku boli účastníci vyzývaní na vykonanie experimentu použiť pripravenú počítačovú myš. Avšak až traja z prvých piatich účastníkov mi dali spätnú väzbu, že nie sú zvyknutí používať počítačovú myš, a teda sa im počítač ťažko ovláda. Následne som každému účastníkovi teda dal možnosť vybrať si, či chce použiť myš alebo touchpad. Ani tento krok neeliminoval všetky problémy, pretože účastníci avizovali, že ich myš sa správa inak, prípadne že touchpad ma inú akceleráciu ako ten, ktorí zvyknú používať.
+
+Ďaľším popísateľným problémom bola skutočnosť, že vyzývaním na vykonanie ďaľšieho kroku som narušil kognitívne procesy účasntíka, čo viedlo k mnohým chybám v pohybe kurzora, ktoré sa prejavili na obrazovke. Niektorí učastníci dokonca v čase konverzácie skladali ruku z ovládacieho zariadenia, a tak každý nový začiatok pohybu znamenal rozkalibrovanie kurzora rýchlym a chaotickým pohybom, ktorý vznikol v čase pokladania ruky na ovládacie zariadenie.
+
+Z týchto dôvodov som sa rozhodol vykonať aj ďaľší experiment popísaný v nasledujúcej časti, ktorý mal tieto problémy eliminovať za cenu vykonávania experimentu v nereálnom prostredí.
+
+\section{Experiment 2\label{sec:exp2}}
+Druhý experiment bol vykonávaný za účelom eliminovať nedostatky prvého experimentu. Tento experiment mohli účastníci vykonať na vlastnom počítači, a tak použiť ovládacie zariadenia, ktoré bežne používaju pri práci s počítačom.
+
+Experimentu sa zúčastnilo 193 ľudí, čo je mnohonásobne väčší počet a tiež rozmanitosti, ako je možné dosiahnúť vykonávaním experimentu osobným stretnutím.
+
+\paragraph{Pracovné prostredie a úlohy účastníka}
+Experiment mohol účastník vykonať pristúpením na verejnú URL adresu. Obrazovka experimentu bola rovnaká ako v prípade prvej časti experimentu 1 (viď Obr. \ref{fig:exp1-screen}). Účastník ale musel v rámci experimentu prejsť dvoma kolami, takže v konečnom dosledku vykonal dvojnásobok kliknutí.
+
+\paragraph{Nedostatky experimentu}
+Experiment síce eliminoval nedostatky, vyplývajúce z používania neznámeho ovládacieho zariadenia a narúšania koginitívnych procesov účasntíka, avšak zaznemanané pohyby neboli vykonávané v reálnom prostredí a účastník nemal možnosť vybrať si cieľ záujmu svojou vlastnou vôľou. Dopad na výsledky nie je známy.
+
+\chapter{Dosiahnuté výsledky \label{cha:eva}}
+V tejto kapitole sa venujem opisu dosiahnutých výsledkov v experimentoch na overenie metódy implementovanej podľa návrhu v kapitole \ref{cha:proposal}. 
+
+Už výsledky jednoduchého experimentu popísaného v časti \ref{sec:exp-verify} naznačovali správnosť prvej hypotézy o možnosti predpovedania celkovej dĺžky pohybu na základe znalosti charakteristík lokálneho maxima v profile rýchlosti pohybu.
+
+V dátach sa objavili zaznamenané pohyby s extrémnymi hodnotami trvania pohybu (ang. outliers), ktoré mohli byť zapríčenené prerušením činnosti alebo straty pozornosti napríklad v podobe opustenia okna prehliadača počas experimentu. Do úvahy boli teda brané iba pohyby, ktorých trvanie bolo menšie ako 2 sekundy.
+
+\section{Presnosť predikcie dĺžky pohybu}
+Presnosť predpovede dĺžky pohybu má kritický dopad na presnosť celej predikcie, a preto potrebujeme, aby bola čo najvyššia. Presnosť vyjadrujeme dvoma veličinami. Relatívnou presnosťou predikovanej dĺžky s reálnou dĺžkou a absolútnou chybou v obrazových bodoch. Keďže dĺžka pohybu mohla byť predikciou nadhodnotená alebo podhodnotená, na vyjadrenie presnosti som použil pomer predikovanej dĺžky k reálnej dĺžke. V prípade, že bol pomer väčší ako 2, miera presnosti bola ohraničená nulou.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=14cm]{assets/images/how-length-accuracy}
+\caption{Grafické znázornenie počítania presnosti predikcie dĺžky pohybu v závislosti od pomeru predikovanej a reálnej hodnoty \label{fig:how-length-accuracy}}
+\end{figure}
+
+\paragraph{Experiment 1}
+Stredná hodnota presnosti predikcie dosahovala 80.5\% pre myš a 82.4\% pre touchpad \ref{plot:lengthaccuracy-m-t-all-hard}. Takáto miera presnosti je veľmi zaujímavá predovšetkým v prípade krátkych pohybov, kde by absolútna chyba nemusela narásť do vysokých hodnôt a bolo by možné stále presne trafiť cieľ. Stredná hodnota absolútnej chyby predikcie dĺžky dosiahla okolie 64px (figúra \ref{plot:lengtherror-m-t-all-hard}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{assets/images/lengthaccuracy-m-t-all-hard}
+\caption{Graf zobrazuje presnosť predikcie dĺžky pohybu v rámci Experimentu 1. Porovnáva presnosť pre myš a pre touchpad. \label{plot:lengthaccuracy-m-t-all-hard}}
+\end{figure}
+
+\paragraph{Experiment 2}
+Ak sa pozrieme na presnosť predikcie pohybu v rámci Experimentu 2, budeme vidieť, že výsledky sú veľmi podobné. Prišlo k miernemu zlepšeniu u myši, keď stredná hodnota bola 82.7\%. Hodnota pre touchpad zostala takmer rovnaká, a to 82.9\% (figúra \ref{plot:lengthaccuracy-m-t-all}).
+
+Zaujímavejší je však pohľad na štatistiku absolútnej chyby (figúra \ref{plot:lengtherror-m-t-all}). V rámci Experimentu 2 sa stredná hodnota absolútnej chyby dostala na polovičnú úroveň a to 31px pre obe ovládacie zariadenia.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{assets/images/lengthaccuracy-m-t-all}
+\caption{Graf zobrazuje presnosť predikcie dĺžky pohybu v rámci Experimentu 2. Porovnáva presnosť pre myš a pre touchpad. \label{plot:lengthaccuracy-m-t-all}}
+\end{figure}
+
+\section{Chyba predikcie cieľa}
+Schopnosť presne predikovať bod destinácie pohybu je kľúčová k uhádnutiu správneho cieľa.  Chyba v predikcii je vyjadrená vzdialenosťou predikovaného koncového bodu od požadovaného klikateľného cieľa. V prípade, ak bola predikovaná poloha v rámci klikateľného cieľa, išlo o nulovú chybu (figúra \ref{fig:error}). Za spoľahlivú predikciu považujeme takú predikciu, ktorej chyba bola menšia ako 20px, kedy je stále možné spoľahlivo určiť cieľ (viď fig. \ref{fig:target-w-20px}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=6cm]{assets/images/error}
+\caption{Ilustrácia spôsobu počítania chyby predikcie cieľa. Body A a B predstavujú presnú predikciu s nulovou chybou. Body C a D predstavujú predikciu s chybou 10px resp. 26px. \label{fig:error}}
+\end{figure}
+
+\paragraph{Experiment 1}
+V prípade tohto experimentu sú dosiahnuté stredné hodnoty na úrovni 56px pre počítačovú myš a 49.5px pre touchpad (figúra \ref{plot:error-m-t-hard}). Takáto chyba je prijateľná v prostredí s malou hustotou potenciálných cieľov, napríklad ako v prostredí vyhľadávača použitom v Experimente 1. V prostredí s vyššou hustotou cieľov už môže spôsobovať problémy v určovaní správneho cieľa. Ak sa však pozrieme na distribúcou chyby zobrazenú vo figúre \ref{plot:error-m-t-histogram-hard}, môžeme vidieť, že pomer správnej predikcie (teda predikcie s nulovou chybou) k ostatným chybám je niekoľkonásobne väčší. Ak zoskupíme dáta do skupín po 20px (figúra \ref{plot:error-m-t-histogram-fine-hard}), je možné vidieť obrovskú prevahu dobrých predikcií, ktoré sú znázornené v prvom stĺpci.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{assets/images/error-m-t-hard}
+\caption{Vizualizácia zobrazuje chybu v predikcii cieľa v rámci Experimentu 1.  \label{plot:error-m-t-hard}}
+\end{figure}
+
+\paragraph{Experiment 2}
+Výsledky Experimentu 2 preukázali lepšie výsledky, keď sa stredná hodnota chyby dostala na zhruba polovicu oproti Experimentu 1. Stredná hodnota chyby dosiahla úroveň 27px pre myš a 26px pre touchpad (figúra \ref{plot:error-m-t}). Dobrým výsledkom je chyba spodných 25\% predikcií, ktorá dosiahla hodnotu iba 8px pre myš resp. 7px pre touchpad. S takouto mierou chybovosti môžeme predpokladať spoľahlivé predikcie aj v prostredí vyššou hustotou klikateľných elementov. V rovnakom pohľade na distribúciu dát do skupín po 20px (figúra \ref{plot:error-m-t-histogram-fine}), je takisto prítomná prevaha spoľahlivých predikcií zobrazených v prvom stĺpci oproti zvyšku.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{assets/images/error-m-t}
+\caption{Vizualizácia zobrazuje chybu v predikcii cieľa v rámci Experimentu 2.  \label{plot:error-m-t}}
+\end{figure}
+
+\section{Ušetrený čas}
+Miera ušetreného času je veľmi dôležitá meraná veličina, keďže hlavnou úlohou implementácie metódy je zdanlivo znížiť čas odozvy systému. Hodnota hovorí o tom, o aký čas skôr sa podarilo predpovedať správny cieľ pohybu, ako je tento cieľ reálne dosiahnutý.
+
+\paragraph{Experiment 2}
+Dáta nazbierané počas vykonávania Experimentu 2 hovoria, že stredná hodnota trvania pohybu bola 666.2ms v prípade počítačovej myši a 850.9ms v prípade touchpadu. Z dát v grafe (figúra \ref{plot:dur-all}) je možné vyčítať, že pohyby vykonávané myšou sú rýchlejšie a ich variabilita je menšia.
+
+Z rozdielu trvania pohybov môžeme predpokladať, že ušetrený čas pre touchpad bude dosahovať lepšie výsledky ako v prípade počítačovej myši. Ak berieme do úvahy absolútny ušetrený čas, tak tento predpoklad potvrdzujú výsledky znázornené vo figúre \ref{plot:savedtime-fine}. Aby sme vyčíslili iba ozajstný ušetrený čas, do úvahy berieme iba tie predikcie, ktorých dosiahnutá chyba bola menšia ako 20px. Čas ušetrený pre počítačovú myš dosiahol strednú hodnotu 336ms, pričom pre touchpad je táto hodnota 535.1ms. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{assets/images/savedtime-m-t-fine}
+\caption{Vizualizácia zobrazuje ušetrený čas [ms] v Experimente 2 pre predikcie s chybou menšou ako 20px.  \label{plot:savedtime-fine}}
+\end{figure}
+
+Ak zobrazíme štatistiku iba pre tých účastníkov, ktorí počas vykonávania Experimentu 2 spravili menej ako 5 nepresných kliknutí (kliknutie mimo správny cieľ), dosiahneme zlepšenie miery ušetreného času o približne 100ms (figúra \ref{plot:savedtime-finetyfine}). Miera účastníkov, ktorí spravili menej ako 5 chybných kliknutí je až 77.7\%. Pre predikcie s týmto kritériom čas ušetrený pre počítačovú myš dosiahol strednú hodnotu 425.25ms a pre touchpad je táto hodnota 633.1ms. 
+
+\paragraph{Experiment 1}
+V prvom rade je potrebné poukázať na odlišnú dobu trvania pohybov ako v prípade Experimentu 2. Stredná hodnota trvania pohybu bola 919.15ms v prípade počítačovej myši a 973.6ms v prípade touchpadu (figúra \ref{plot:dur-all-hard}). Z hodnôt je jasné, že odlišnosť v použitých ovládacích zariadeniach nie je tak razantná ako v prípade Experimentu 2. 
+
+Rovnako ako v predošlom prípade, do úvahy berieme iba tie predikcie, ktorých dosiahnutá chyba bola menšia ako 20px. Čas ušetrený pre počítačovú myš dosiahol strednú hodnotu 575.85ms, pre touchpad je táto hodnota 663.95ms \ref{plot:savedtime-finetyfine-hard}. Ušetrený čas pri myši dosiahol nárast až o 35\% resp. 5\% v prípade touchpadu.
+
+Čas vykonávania pohybu sa výrazne predĺžil predovšetkým v prípade počítačovej myši, keď bola nameraná stredná hodnota o 38\% vyššia a jej variabilita bola taktiež väčšia ako v prípade touchpadu. Zaujímavosťou je, že nárast miery ušetreného času je rovnomerný s nárastom trvania pohybu iba v prípade počítačovej myši. Tento úkaz môžeme pripísať veľkej rozmanitosti typov počítačových myší a ich vlastností, napríklad v podobe DPI alebo akcelerácie, či dokonca povrchom podložky. Nevieme však povedať, do akej miery boli namerané hodnoty ovplyvnené rozdielmi medzi laboratórnym a reálnym prostredím, ktoré sú popísané v časti \ref{cha:exp}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{assets/images/savedtime-m-t-finetyfine-hard}
+\caption{Vizualizácia zobrazuje ušetrený čas [ms] v Experimente 1 pre predikcie s chybou menšou ako 20px. \label{plot:savedtime-finetyfine-hard}}
+\end{figure}
+
+\section{Rozdiely v pohlaví a skúsenostiach}
+V predošlích sekciách sme sa na rozdieli v nameraných veličinách pozerali iba z pohľadu ovládacieho zariadenia. Je to mu tak preto, lebo pri základných agregáciach neboli zistené signifikantné rozdieli v chybovosti predikcie medzi pohlavím (fig. \ref{plot:error-f-m-all}), či vlastným ohodnotením skúseností na škále od 1 do 5 (fig. \ref{plot:error-by-skill}). Najnižšia skupina skúseností (ohodnotená číslom 1) mala výchylku v presnosti predikcie, no v končenom dôsledku to nemalo vplyv na mieru ušetreného času (fig. \ref{plot:savedtime-by-skill}).
+
+\section{Porovnanie s existujúcimi riešeniami}
+Výsledky navrhnutej metódy porovnávame s výsledkami doteraz najúspešnejšej metódy predikovania pohybu, a to predpoveď párovaním kinematických šablón popísanej v časti \ref{ktm}. Tým, že ich riešenie umožňovalo analyzovať celý priebeh pohybu, vyčíslili svoje výsledky chybou predikcie v obrazových bodoch v rôznych mierach dokončenia pohybu 50\%, 75\% a 90\%. 
+
+Naše riešenie neumožňuje vyčísliť chybu takýmto spôsobom, kedže predikcie môžu prebiehať iba v čase výskytu vrcholu rýchlosti. Preto sme na vyčíslenie chyby použili tie predikcie, ktoré boli uskutočnené maximálne v miere 50\% dokončenia pohybu, následne viac ako 50\% ale zároveň maximálne 75\% a v poslednom rade predikcie, kde bola miera dokončenia pohybu od 75\% do 90\%. Takéto porovnanie síce znevýhodnilo výsledky našej metódy, no zároveň bolo vhodným kompromisom vzhľadom na množstvo dostupných dát.
+
+Výsledky zobrazené v tabuľke \ref{tab:ktm-looser} hovoria o lepších výsledkoch vo všetkých troch kategóriach. Výhodou našej metódy je taktiež množstvo pohybov potrebných na trénovanie. Metóda KTM na dosiahnutie zobrazených výsledkov potrebuje 1000 šablónovacích pohybov. Naša metóda dokáže výsledky dosahovať prakticky už po pár pohyboch. V rámci celého experimentu bolo vykonaných približne 144 pohybov, ktoré boli použité postupne na trénovanie a zároveň overenie presnosti predikcie.
+
+\begin{table}[]
+\centering
+\begin{tabular}{cccc}
+   &              & \multicolumn{2}{c}{naša metóda} \\
+\% & KTM {[}px{]} & touch {[}px{]} & mouse {[}px{]} \\ \hline
+50 & 83           & 39             & 57             \\
+75 & 48           & 28             & 33             \\
+90 & 39           & 23             & 25            
+\end{tabular}
+\caption{Porovnanie výsledkov najúspešnejšej metódy KTM a našej metódy. Výsledky našej metódy sú ďalej rozdelené podľa ovládacieho zariadenia.\label{tab:ktm-looser}}
+\end{table}
+
+

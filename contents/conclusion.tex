@@ -1,0 +1,19 @@
+\chapter{Záver}
+
+Práca je zameraná na predpoveď miesta, kam používateľ systému klikne svojim ovládacím zariadením. Správnou predpoveďou tohto bodu je možné zdanlivo znížiť odozvu systému. Na základe analýzy existujúcich riešení sme sa rozhodli navrhnúť metódu, ktorá bude na predikciu akcie používateľa využívať kinematické vlastnosti pohybu kurzora po obrazovke. Dôkladnou analýzou týchto vlastností sa podarilo úspešne navrhnúť a implementovať metódu na predikciu koncového bodu pohybu v reálnom čase, ktorú je možné využívať v prostredí webových prehliadačov.
+
+\section{Zhodnotenie}
+Výsledkom práce je návrh metódy využívajúcej viacnásobnú lineárnu regresiu. Výsledkom je tiež úspešná implementácia metódy, ktorá dokáže rýchlo, a to v reálnom čase, predpovedať koncový pod pohybu, pričom predikcia môže byť vykonávaná niekoľko krát počas jedného prebiehajúceho pohybu. Počet predikcií závisí od počtu lokálnych extrémov v profile rýchlosti pohybu. Predikcia využíva iba zdroje klienta resp. webového prehliadača a nie je pre jej fungovanie potrebná žiadna webová služba.
+
+Implementácia metódy bola overená v dvoch experimentoch, ktorých sa zúčastnilo dokopy 204 ľudí. Na základe analýzy výsledkov predikcie vykonanej v experimentoch sme preukázali, že metóda dosahuje lepšie výsledky ako doposiaľ najlepšia známa metóda KTM, a teda metódu považujeme za úspešnú.
+
+Pred vykonávaním experimentu sme mali zadefinované tri hypotézy. Prvá hypotéza bola, že je možné na základe znalosti lokálneho maxima v profile rýchlosti vypočítať celkovú dĺžku pohybu. Vzhľadom na mieru v okolí 82\% úspešnosti predpovedania celkovej dĺžky pohybu môžeme hypotézu považovať za potvrdenú.
+
+Druhou hypotézou bolo, že metóda bude úspešnejšia pre počítačovú myš, pretože pohyby vykonávané počítačovou myšou sa vyznačujú jednoduchším priebehom. Táto hypotéza sa vyvrátila, pretože v takmer všetkých porovnaniach týchto dvoch zariadení dosahol touchpad lepšie výsledky.
+
+Tretia hypotéza vyplynula z priebehu vykonávania prvého experimentu, a to že metóda bude účinnejšia v prípade použitia známeho zariadenia. Túto hypotézu sa nám nepodarilo jednoznačne vyvrátiť, či potvrdiť. Presnosť predikcie dĺžky pohybu bola lepšia v prípade použitia osvojeného zariadenia, takisto chyba predikcie koncového bodu bola v tomto prípade lepšia. No v prípade dobrých predikcí sme zaznamenali vyššiu mieru ušetreného času v prípade neznámeho ovládacieho zariadenia. Nevieme však jednoznačne povedať, že do akej miery boli tieto merania ovplyvnené povahou použitého ovládacieho zariadenia alebo povahou vykonávaného experimentu.
+
+\section{Limitácie a ďaľšia práca}
+Práca sa ďalej nezaoberala metódou výberu správneho cieľa v oblasti predikovaného koncového bodu. Metóda tiež nepokrýva rozlišovanie pohybov na tie, ktoré končia interakciou a tie, ktoré interakciou nekončia. Metóda síce dokáže relatívne presne predpovedať koncový bod pohybu, no nevie povedať, či pohyb vedie k vykonaniu akcie alebo nie. Medzi ďaľšie limitácie práce patrí neimplementácia zvažovaných alterantív v podobe známej strmosti klesania rýchlosti pohybu po detekcii vrcholu rýchlosti či smeru pohybu, ktorý dokázateľne ovplyvňuje precestovanú vzdialenosť. No v rámci implementácie bol vytvorený objekt na výber stratégie predikcie, ktorý je pripravený na takéto použitie.
+
+V spomenutých limitáciach vidíme priestor na vylepšenie metódy a na ďaľšiu prácu na implementácii. So zvyšujúcim sa počtom charakteristík, ktoré vplývajú na predikciu koncového bodu pohybu, vidíme priestor na použite neurónových sietí v podobe regresora implementovaného viacvrstvovým perceptrónom.

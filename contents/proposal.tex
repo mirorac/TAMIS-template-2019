@@ -1,0 +1,203 @@
+\chapter{Návrh metódy predikovania cieľa záujmu\label{cha:proposal}}
+
+Navrhovaná metóda vychádza z predpokladu vysokej závislosti medzi hodnotou vrcholu rýchlosti a celkovou dĺžkou pohybu, ktorú je možné vyjadriť lineárnou závislosťou, ktorú predstavil \emph{Asano et al.} \cite{asano2005predictive}. Závislosť je zobrazená vo vzťahu \ref{eq:base-premise}, kde \emph{D} je celková dĺžka pohybu, \emph{V$_{max}$} je vrchol rýchlosti pohybu a \emph{a}, \emph{b} sú parametre závislé od zariadenia a používateľa.
+
+\begin{equation}
+D = a.V_{max} + b
+\label{eq:base-premise}
+\end{equation}
+
+Predpokladáme však, že hodnota parametra \emph{a} nie je konštantná pre každý pohyb, ale je ovplyvnená nie len používateľom samotným, ale aj inými charakteristikami pohybu. Pozorovaním počas vyhodnocovania experimentu 1 (časť \ref{sec:exp1}) sme zistili, že veľký vplyv na túto závislosť má aj to, ako rýchlo bol dosiahnutý vrchol rýchlosti a ako výrazne bol bezprostredne po dosiahnutí vrcholu pohyb spomalený. Obr. \ref{fig:2-types-profile} zobrazuje 2 pohyby, ktoré majú rozdielny vrchol rýchlosti, no rovnakú celkovú dĺžku.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=10cm]{assets/images/2-types-profile}
+\par
+\caption{Ilustrácia dvoch profilov rýchlosti zobrazujúcich ako môžu pohyby s rozdielne veľkými vrcholmi rýchlosti dosahovať rovnakú vzdialenosť. Rýchlejšie dosiahnutý vrchol \emph{A$_{VP}$} je nasledovaný aj väčšou zápornou akceleráciou ako v prípade pohybu s menším vrcholom \emph{B$_{VP}$}, ale manšou zápornou akceleráciou nasledujúcou za vrcholom. \label{fig:2-types-profile}}
+\end{figure}
+
+Z dôvodu viacerých vplyvov na dĺžku pohybu rozširujeme regresiu o ďaľšie regresory a parametre (vzťah \ref{eq:multiple-linear-regression}), ktoré predstavujú iné závislosti resp. charakteristiky pohybu. V prípade, že budeme brať do úvahy okrem vrcholu rýchlosti aj vzdialnosť jeho dosiahnutia od začiatku pohybu a zároveň aj čas, ako rýchlo bol vrchol dosiahnutý, rožšírime vzťah regresie o dva ďaľšie regresory. Model takejto regresie má konečný tvar zobrazený vo vzťahu \ref{eq:multiple-regresion-conrete}, kde regresor \emph{P$_{d}$} predstavuje vzdialenosť vrcholu v priestore a regresor \emph{P$_{t}$} je vzdialenosť vrcholu v čase od začiatku pohybu.
+
+\begin{equation}
+D = a_{1}.V_{max} + a_{2}x_{2} + ... + a_{n}x_{n} + b
+\label{eq:multiple-linear-regression}
+\end{equation}
+
+\begin{equation}
+D = a_{1}.V_{max} + a_{2}P_{d} + a_{3}P_{t} + b
+\label{eq:multiple-regresion-conrete}
+\end{equation}
+
+\section{Predspracovanie dát}
+Predspracovanie dát je veľmi dôležitá časť, pretože od nej závisí celý zvyšok procesu. Dáta obsahujú aj záznamy o akciách používateľa iných ako pohyb myšou, ako napríklad posúvanie kolečka myši alebo blúdenie, teda vykonávanie pohybu, ktorý nenasleduje žiaden cieľ. Surové dáta o pohyboch je tiež potrebné rozdeliť na izolované pohybu tak, aby sme nepovažovali dva po sebe idúce pohyby ako jeden pohyb. Zohľadniť je potrebné aj možné zloženie jedného pohybu z viacerých podpohybov. 
+
+Indikátormi nového pohybu sú:
+\begin{itemize}
+\item väčšia časová prestávka medzi zmenami polohy kurzora,
+\item náhla a pretrvávajúca zmena smeru pohybu,
+\item pohyb prerušený inou akciou používateľa (kliknutie, posúvanie sa koliečkom myši).
+\end{itemize}
+
+\paragraph*{Interpolácia} Všetky záznamy udalostí spustených myšou nesú časovú známku, na základe ktorých je potrebné vypočítať rýchlosť pohybu v čase resp. celý profil rýchlosti. Polohy kurzora nie sú zaznamenávané v pravidelných intervaloch, pretože interval spúštania udalostí môže byť ovplyvnený rôznymi faktormi, ako je napríklad počet udalostí čakajúcich v rade alebo vytaženie procesora. Za účelom lepšieho porovnávania hodnôt charakteristík medzi viacerými pohybmi, sú hodnoty prevzorkované pomocou lineárnej interpolácie do pravidelných intervalov vo frekvencii 20Hz. Ak poznáme rýchlosť \emph{$v_{i}$} v čase \emph{$t_{i}$}  a rýchlosť \emph{$v_{i+2}$} v čase \emph{$t_{i+2}$}, potom vieme lineárne estimovať rýchlosť \emph{$v_{i+1}$} v čase \emph{$t_{i+1}$} podľa vzťahu \ref{eq:linear-interpolation}, pretože je stredovým bodom priamky medzi dvoma známymi bodmi.
+
+\begin{equation}
+v_{i+1} = v_{i} + (t_{i+1} - t_{i}) \frac{v_{i+2} - v_{i}}{t_{i+2} - t_{i}}
+\label{eq:linear-interpolation}
+\end{equation}
+
+\paragraph*{Vyhladzovanie Kalmanovým filtrom} Prevzorkovaný profil rýchlosti v čase obsahuje šum (Obr. \ref{fig:movement-interpolated}), ktorý výrazne komplikuje hľadanie lokálných extrémov na identifikáciu vrcholov rýchlosti resp. podpohybov. Z tohto dôvodu je profil rýchlosti vyhladený Kalmanovým filtrom, ktorý sa okrem iného používa na odstránenie šumu zo signálu \cite{ahmad2014probabilistic}. Výsledkom je profil rýchlosti, ktorý neobsahuje tak výrazný šum  (Obr. \ref{fig:movement-filtered}) a identifikácia extrémov dosahuje menšiu chybovosť.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/movement-interpolated}
+\par
+\caption{Rýchlosť v čase po prevzorkovaní na frekvenciu 20Hz obsahuje množstvo šumu.\label{fig:movement-interpolated}}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/movement-filtered}
+\caption{Rýchlosť v čase po vyhladení pomocou Kalmanových filtrov. \label{fig:movement-filtered}}
+\end{figure}
+
+\section{Reprezentácia pohybu}\label{sec:representation}
+
+Sekvencia polôh kurzora reprezentujúca trajektóriu obsahuje absolútne pozície kurzora. Veľkosti rozlíšenia obrazoviek a pomery ich strán sú variabilné. Pohyby s rovnakou trajektóriou a rýchlosťou nemusí prebiehať stále v tej istej oblasti obrazovky. Z týchto dôvodov je vhodné trajektóriu reprezentovať aj relatívnymi hodnotami, napríklad vzhľadom na bod predstavujúci začiatok pohybu. Táto informácia vytvorí nové možnosti hľadania podobností jednotlivých pohybov.
+
+Získané a predspracované dáta podľa metódy popísanej v predošlej časti sa na prvý pohľad nevyznačujú žiadnou významnou charakteristikou. Je preto potrebné navrhnúť vhodnú formu reprezentácie pohybu, ktorá bude okrem polôh kurzora v čase popisovať aj iné užitočné charakteristiky, ktoré budú užitočné pre navhrnutú metódu predikcie koncového bodu popísanú v nasledujúcej časti \ref{sec:prediction-proposal}. 
+
+Pohyb je reprezentovaný vektorom, ktorého komponenty sú charakteristiky popísané v nasledujúcich častiach kapitoly. Jednotlivé charakteristiky sú ale dostupné v rozličnom čase, teda ich znalosť sa postupne kompletizuje. Predikciu chceme vykonať čo najskôr, už počas znalosti najdôležitejších charakteristík - vrcholu rýchlosti, času a vzdialenosť jeho dosiahnutia a smeru. V neskoršej fáze, keď budú známe aj ostatné charakteristiky, ako brzdený pohyb alebo prítomnosť podpohybu, bude vykonaná predikcia s vektorom rozšíreným o nové znalosti.
+
+\subsection{Vrchol rýchlosti}\label{sec:propose-veloctiy-peak}
+Najdôležitejšou charakteristikou je najvyššia dosiahnutá rýchlosť pohybu, od ktorej je priamo závislá celková dĺžka pohybu. Výskyt vrcholu rýchlosti predokladáme v počiatočnej fáze pohybu, ako je ilustrované na obrázkoch \ref{fig:2-types-profile} a \ref{fig:velocity-profile}. Počas vykonávania experimentu jednoduchého overenia princípu metódy sme dosiahli priemerný výskyt vrcholu rýchlosti v bode, kde bol pohyb dokončený na 31\%. Smerodajná odchýlka bodu od mediánu v nameraných hodnotách bola 14\%. Rýchlosť je vyjadrovaná v počte precestovaných obrazových bodov za milisekundu (\emph{px/ms}).
+
+Pohyb môže byť zložený z viacerých podpohybov, čo podľa predpokladov implikuje k prítomnosti viacerých vrcholov rýchlosti, ktoré je tiež možné vidieť na obrázku \ref{fig:velocity-profile}. Tieto vrcholy sú zisťované hľadaním lokálnych extrémov priebehu rýchlosti. Počet lokálnych extrémov určuje počet bezprostredne za sebou idúcich podpohybov. Existuje predpoklad, že globálny extrém je prvým lokálnym extrémom, ktorý patrí hlavnému pohybu, a teda ide práve o vrchol nachádzajúci sa v čase najbližie k začiatku pohybu.
+
+K vrcholu rýchlosti sa viažú aj iné s ním súvisiace charakteristiky. Ako už bolo spomínané v súvislosti s obrázkom \ref{fig:2-types-profile}, na závislosť celkovej dĺžky pohybu od vrcholu rýchlosti vplýva aj to, ako rýchlo je vrchol dosiahnutý a ako rýchlo sa táto rýchlosť znižuje. Zaujíma nás teda veľkosť akcelerácie smerujúcej k dosiahnutiu vrcholu a veľkosť zápornej akcelerácie resp. strmosť klesania rýchlosti bezprostredne po dosiahnutí vrcholu rýchlosti. 
+
+Akcelerácia je vzťah medzi zmenou rýchlosti v pomere so zmenou času (vzťah \ref{eq:acceleration-as-fract}). Tento vzťah hovorí o priemernej akcelerácii v danom časovom úseku. Ak chceme poznať okamižité zrýchlenie, musíme ho vyjadriť prvou deriváciou rýchlosti podľa času (\ref{eq:acceleration-as-derivation}). Z dostupných dát dokážeme získať akceleráciu v každom zaznamenanom resp. interpolovanom bode vo frekvencii 20Hz. 
+
+\begin{equation}
+{\displaystyle a={\frac {\Delta v}{\Delta t}}}
+\label{eq:acceleration-as-fract}
+\end{equation}
+
+\begin{equation}
+{\displaystyle {\vec {a}}={\frac {\mathrm {d} {\vec {v}}}{\mathrm {d} t}}.}
+\label{eq:acceleration-as-derivation}
+\end{equation}
+
+Potrebujeme však poznať presný časový úsek, pre ktorý chceme určiť akceleráciu a bude porovnateľný medzi viacerými pohybmi. Tento úsek je z jednej strany ohraničený vrcholom rýchlosti. Rozpoznávame dve ohraničenia za vrcholom rýchlosti, ktoré sú závislé od času, za ktorý bol dosiahnutý vrchol rýchlosti (Obr. \ref{fig:velocity-3-times}). Aby sme zachovali rovnaké jednotky hodnôt vo vektore, nevyjadrujeme akceleráciu ale okamžité rýchlosti v časoch \emph{1.5t} a \emph{2t}, ktoré taktiež nesú informáciu o strmosti klesania rýchlosti.
+
+Zaujímame sa teda celkom o štyri charakteristiky vychádzajúce z rýchlosti pohybu:
+\begin{itemize}[noitemsep]
+\item vrchol rýchlosti [px/ms]
+\item čas, za aký bol vrchol dosiahnutý [ms]
+\item rýchlosť v 1.5 násobku času dosiahnutia vrcholu [px/ms]
+\item rýchlosť v 2 násobku času dosiahnutia vrcholu [px/ms]
+\end{itemize}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/3-times}
+\par
+\caption{Rýchlosť \emph{$v_{1}$} zaznamenaná v čase \emph{$t_{1}$} je vrchol rýchlosti. Rýchlosť \emph{$v_{2}$} je rýchlosť zaznamenaná až po dosiahnutí vrcholu v čase \emph{$t_{2}$}, pričom \emph{$t_{2} = \frac{3t_{1}}{2}$}. Rýchlosť \emph{$v_{3}$} je rýchlosť dosiahnutá v čase \emph{$t_{3} = 2t_{1}$}. Rýchlosti \emph{$v_{2}$} a \emph{$v_{3}$} sú nositeľmi informácie o veľkosti zníženia rýchlosti po dosiahnutí času, teda nesú rovnakú informáciu ako vyjadrenie zápornej akcelerácie. \label{fig:velocity-3-times}}
+\end{figure}
+
+\subsection{Smer pohybu}
+Ako bolo spomenuté v analýze charakteristiky pohybu, smer pohybu ovplyvňuje jeho rýchlosť. Preto je pre pohyb vypočítaný uhol smeru pohybu, ktorý sa ale v priebehu vykonávania pohybu mení. Pohyb po obrazovke je sekvencia polôh v bodoch definovaných diskrétnymi hodnotami súradníc. Teda môže vzniknúť veľká chyba pri výpočte aktuálneho smeru pohybu z dvoch za sebou nasledujúcich bodov, ak je pohyb veľmi pomalý (Obr. \ref{fig:angle-error}). Extrémnym príkladom môže byť pohyb v smere 45$^{\circ}$, ktorého ale dva po sebe nasledujúce body sú bezprostredný susedia. Tým, že sú body rozložené v štvorcovej mriežke, bude vypočítaný smer pohybu 0$^{\circ}$ alebo 90$^{\circ}$, čím vznikne chyba 45$^{\circ}$. 
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=8cm]{assets/images/angle-error}
+\caption{Ilustrácia zobrazuje priblíženie na zaznamenanú trajektóriu pohybu, ktorý má smer \emph{u1}. Ak ale zaznamenáme polohy v bode \emph{A} a \emph{B}, môžeme chybne vypočítať smer pohybu \emph{u2}, ktorý sa od reálneho smeru líši chybou vyjadrenou uhlom \emph{e}. \label{fig:angle-error}}
+\end{figure}
+
+Riešením je aktuálny smer $\theta$ pohybu počítať na základe pozícii \emph{p} vzdialenejších bodov (vzťah \ref{eq:angle-offset}), ktorých posun je definovaný parametrom \emph{o} hovoriaci o tom, ako vzdialený sused do minulosti bude použitý na počítanie aktuálneho smeru pohybu. Alternatívnym prístupom je počítať smer pohybu v bode, kde je detegované lokálne maximum, a to vzhľadom na začiatok pohybu resp. na bod z predchádzajúceho lokálneho minima.
+
+\begin{equation}
+{\displaystyle \mathbf \cos \left (\theta  \right ) = \frac{{p_{t}} \cdot {p_{t-o}}}{\left\|\mathbf {p_{t}} \right\|\left\|\mathbf {p_{t-o}} \right\|}}
+\label{eq:angle-offset}
+\end{equation}
+
+\subsection{Opravné pohyby}
+Používatelia často svoj cieľ minú, a tak musia vykonať opravný pohyb, ktorý je taktiež podpohyb. Podpohyby boli popísané v časti \ref{sec:propose-veloctiy-peak}, teda sú detegovaný prítomnosťou lokálneho maxima, pričom za začiatok podpohybu považujeme predchádzajúce lokálne minimum. Okrem týchto znakov je opravný pohyb  charakterizovaný nízkou rýchlosťou a opačným smerom, resp. s významnou odchýlkou smeru s predpokladanou hodnotou väčšou ako 30$^{\circ}$ vzhľadom na hlavný pohyb. Okrem kontroly smeru pohybu a prítomnosťou maxím sú detegované tak, že sú v sekvencii polôh kurzora prítomné body, ktorých vzdialenosť od začiatku pohybu je väčšia ako vzdialenosť koncového bodu od počiatočného bodu pohybu.
+
+Detegovaný opravný pohyb je následne spracovávaný ako každý iný pohyb, ale je použitý na upresnenie predikcií vykonaných nad hlavným pohybom.
+
+\section{Predikcia koncového bodu}\label{sec:prediction-proposal}
+
+Navrhovaná metóda predikovania koncového bodu je založená na vypočítaní dĺžky pohybu na základe viacerých charakteristík pohybu, ktoré je možné zistiť už v priebehu jeho vykonávania. So znalosťou počiatočného smeru pohybu a predikovanej dĺžky pohybu dokážeme vypočítať bod destinácie. Metóda následne musí mať znalosť o potenciálnych cieľoch záujmu resp. klikateľných objektov, z ktorých je vybraný najbližší sused k predpovedanému koncovému bodu.
+
+Výpočet celkovej dĺžky pohybu bude vykonávaný pomocou modelu regresora, ktorý môže mať viaceré formy. Do úvahy pripadá viacnásobná lineárna regresia, viacnásobná polynomiálna regresia alebo je možné využiť model umelej neurónovej siete, konkrétne viacvrstvového perceptrónu. Zvažovať využitie viacvrstvového perceptrónu môžeme predovšetkým v prípade zväčšujúceho sa množstva nezávislých premenných resp. charakteristík.
+
+\paragraph*{Algoritmus predikcie}
+Hlavná kostra algoritmu je zisťovanie pozície kurzora a budovanie profilu rýchlosti pohybu v reálnom čase. Reakciou na zaznamenanie novej pozície kurzora je výpočet rýchlosti pohybu vzhľadom na predošlú zaznamenanú hodnotu. Každou zaznamenanou hodnotou objavujeme nové znalosti o pohybe, preto je potrebné kontrolovať, či nová znalosť spôsobila výraznu zmenu, na ktorú treba reagovať. Príkladom je detekcia začiatku resp. konca izolovanej sekvencie hodnôt reprezentujúcej izolovaný pohyb myši, poprípadne vykonanie samotnej predikcie. Pseudokód spúštania týchto akcií je možné vidieť vo figúre \ref{code:alg-listener}.
+
+\begin{figure}[h]
+\vspace{0.2cm}
+\begin{lstlisting}
+let sequence = []
+FOR each new cursor position {
+    calc position.velocity
+    pushPosition()
+    IF sequence is empty {
+        sequence.push(position)
+        newSequence()
+    } ELSE {
+        sequence.push(position)
+        IF sequence end condition {
+            sequenceEnd()
+            sequence = []
+        }
+    }
+}
+\end{lstlisting}
+\caption{Pseudokód obslužnej algoritmu zaznamenavajúceho nové pozície kurzora a spúšťanie potrebných akcií \label{code:alg-listener}}
+\end{figure}
+
+\paragraph{Začiatok pohybu} Detekcia začiatku nového izolovaného pohybu znamená nutnosť inicializovať prediktor resp. regresný model, ktorý je pripravený predikovať pohyb a držať informácie o výsledkoch vykonaných predikcií, ktorých môže byť niekoľko v závislosti od miery dokončenia pohybu a počtu podpohybov.
+
+\paragraph{Detekcia zmeny polohy kurzora} Ak sme už detegovali začiatok pohybu, potrebujeme po každej zmene polohy kurzora hľadať prítomnosť nového, zatiaľ neobjaveného vrcholu rýchlosti. Vrchol je hľadaný po voliteľnej transformácii v podobe interpolácie resp. vyhladenia. Ak je objavené nové lokálne maximum, sú vyčíslené požadované charakteristiky pohybu: maximálna rýchlosť, čas dosiahnutia rýchlosti, precestovaná vzdialenosť a smer od začiatku pohybu po bod, kde bol dosiahnutý vrchol. Na základe týchto parametrov je vyvolaný výpočet predikovanej dĺžky pohybu pomocou regresného modelu. So známou východiskovou polohou (\textit{$x_{0}$, y$_{0}$}), predokladanou dĺžkou pohybu (\textit{d}) a jeho smeru (\textit{$\theta$}) vieme vektorovou analýzou (\ref{eq:destination-point}) vypočítať bod destinácie kurzora. 
+
+\paragraph{Koniec pohybu} Detekcia konca izolovaného pohybu je priestor na evaluáciu vykonaných predikcií, keďže je už možné vypočítať reálnu vzdialenosť, ktorú kurzor precestoval. V prípade, že bola dĺžka predikovaná s veľkou chybou, je potrebné pretrénovať regresný model s novými známymi charakteristikami popisujúce dĺžku pohybu.
+
+Pseudokód popísaných akcií spúšťaných ako reakcia na zmeny v polohe kurzora je možné vidieť vo figúre \ref{code:alg-services}.
+
+\begin{equation}
+{\displaystyle \mathbf [\cos \theta \cdot d + x_{0},  \sin \theta \cdot d + y_{0}]}
+\label{eq:destination-point}
+\end{equation}
+
+Následne s predpovedanou destináciou zostáva posledný krok, a to vykonať vhodnú akciu. Vykonanie požadovanej akcie je mimo rámcu návrhu metódy, preto ako príklad uvádzam hľadanie najbližšieho elementu, s ktorým je možné interagovať a prednačítanie URL adresy tohto elementu.
+
+\section{Implementácia metódy vo webovom prehliadači} 
+Metódu som implementoval v jazyku JavaScript s využitím jeho syntaktickej nadmnožiny TypeScript, ktorá do pôvodnej syntaxe pridáva nové konštrukcie ako definícia dátových typov pre premenné či argumenty, a tiež výstupné hodnoty funkcií \cite{microsoft:typescript}. Takto napísaný program je následne kompilovaný do JavaScriptu s voliteľnou cieľovou verziou ECMAScript \cite{zakas2016understanding}.
+
+Riešenie je napísané ako modul, ktorý obsahuje komponenty reprezentované triedami. Každý z komponentov vykonáva svoju úlohu a komunikujú medzi sebou využitím paradigmy udalosťami riadeného vývoja. Takto je zabezpečená nízka praviazanosť a možnosť vstupovať do procesu externými komponentami. Ako cieľ na manažment udalostí je využívané hlavné prostredie prehliadača - objekt \emph{window}, ktorý je dostupný pre každý kód vykonaný v relácii a implementuje rozhranie \emph{EventTarget}\footnote{EventTarget - Web APIs | MDN "https://developer.mozilla.org/en-US/docs/Web/API/EventTarget"}. Toto rozhranie umožňuje spúšťať udalosti, a tiež na ne reagovať. Figúra \ref{code:event-driven} obsahuje ukážku kódu, ako môžu komponenty modulu ale aj externé komponenty reagovať na udalosť predikcie koncového pohybu vďaka odosielaniu informácií o predikcii prostredníctvom udalosti nazvanej \emph{mousemove.prediction}.
+
+Popis tried tvoriacich implementovaný modul je možné vidieť v časti prílohy \ref{sec:tech-implem}.
+
+\subsection{Zaznamenávanie dát}
+Počas relácie sú zaznamenávané udalosti vyvolávané interakciou používateľa s počítačovou myšou resp. touchpadom, ktoré vyvolávajú udalosti implementujúce rozhranie \emph{MouseEvent} \footnote{MouseEvent - Web APIs | MDN "https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent"}. Najdôležitejšou udalosťou je tá, ktorá popisuje zmenu polohy kurzora na obrazovke, a teda udalosť \emph{mousemove}. Spôsob preberania informácie z tejto udalosti je znázornený vo figúre \ref{code:listening}. 
+
+Samotný pohyb nám nedáva postačujúce informácie, preto je potrebné odpočúvať aj udalosti, ktoré explicitne indikujú záujem. Najčastejšou udalosťou takéhoto typu je kliknutie, a teda udalosť \emph{click}, ktorá nastáva pri každom pokuse o navigáciu vo webovom sídle. Ďaľšou možnosťou je zaznamenávanie udalosti \emph{mousedown}, ktorá hovorí o stlačení tlačidla myši, no nie jeho rýchle pustenie. Takýto stav nastáva napríklad na začiatku označovania textu, čo je taktiež relevantný ukazovateľ záujmu, rovnako ako kliknutie.
+
+Pre každú odpočúvanú udalosť sú zaznamenávané informácie o type vzniknutej udalosti, presný časový odtlačok, kedy udalosť nastala, momentálna poloha kurzora relatívnou hodnotou k ľavému hornému rohu obrazovky, ktorá je daná hodnotami \emph{clientX} a \emph{clientY}.  Na zaznamenávané polohy kruzora tak nemá vplyv posúvanie sa koliečkom myši resp. posúvnikom na dlhých webových stránkach. Pre metódu je zaujímavá absolútna poloha na obrazovke a nie na webovej stránke. Pre interakčné udalosti sú zbierané aj informácie o rozmeroch a pozícii elementu, na ktorý používateľ klikol.
+
+\paragraph{Tvorba profilu rýchlosti}
+Komponent \emph{ValueObserver} obsahuje verejné metódy \emph{dispatch} a \emph{dispatchInteractive}, pomocou ktorých sú zaznamenávané nové hodnoty o pohybe. Pri každom volaní jednej z týchto metód je vytváraný spájaný zoznam hodnôt, pričom je do každej hodnoty vypočítaná rýchlosť pohybu vzhľadom na predošlú hodnotu. Takto je vytvorený profil rýchlosti pohybu. Na základe analýzy nad týmto profilom sú vytvárané sekvencie využitím komponentu \emph{Sequence}, predstavujúce izolované pohyby, nad ktorými je vykonávaná predikcia. O vzniku alebo zániku izolovaného pohybu je systém notifikovaný udalosťami typu \emph{mousemove.sequence.start} a \emph{mousemove.sequence.end}. Zároveň pri každom spustení metódy typu \emph{dispatch} je systém notifikovaný o prijatí novej hodnoty udalosťou typu \emph{mousemove.pushvalue}.
+
+\subsection{Ukladanie dát do centrálneho úložiska}
+Dáta o pohyboch používateľov v rámci experimentov je potrebné zbierať do jedného dátového úložiska, aby mohli byť následne analyzované a vyhodnocované na vývoj a zlepšovanie metódy predikovania. Za účelom vytvorenia takéhoto úložiska dát prístupného cez internetovú sieť, je vytvorená jednoduchá webová služba komunikujúca cez aplikačný protokol \emph{HTTP}. Dáta sú v štandardizovanom formáte \emph{JSON} uložené do databázy typu \emph{MySQL}. Viac informácii je možné nájsť prílohe Technická dokumentácia.
+
+V súčasnej implementácii nie sú ukladané váhy natrénovaných modelov, tie sú držané iba v operačnej pamäti a pri začatí novej relácie je vytvorený nový prázdny model, ktorý je trénovaný počas používania ovládacieho zariadenia v danej relácii.
+
+\subsection{Predikcia koncového bodu}
+Práca s predikciou pohybu začína v momente, keď je systém notifikovaný udalosťou \emph{mousemove.sequence.start}. V tomto momente je vytvorená inštancia triedy \emph{Predictor}, pričom vstupným parametrom je inštancia \emph{Sequence}, ktorá bola obdržaná spolu s notifikáciou. Druhým stupným parametrom je pole tried transformujúcich hodnoty sekvencie. Zároveň je pre udalosť \emph{mousemove.pushvalue} zaregistrovaná funkcia, ktorá spúšťa samotnú predikciu.
+
+Predikcia spočíva v hľadaní posledného lokálneho maxima resp. vrcholu v sekvencii hodnôt rýchlosti. Ak je nájdený nový vrchol rýchlosti, pre ktorý predikcia ešte nebola vykonávaná, sú vypočítané charakteristiky prislúchajúce k tomuto vrcholu: čas a vzdialenosť dosiahnutia, samotná rýchlosť v tomto vrchole. Tieto charakteristiky slúžia ako vstupné parametre do regresora, ktorého výstupom je predpovedaná dĺžka pohybu. So známym smerom pohybu, dĺžkou a východiskovou pozíciou je následne vypočítaný cieľový bod. Následne je systém notifikovaný udalosťou typu \emph{mousemove.prediction}.
+
+Pred hľadaním vrcholu rýchlosti sú na sekvenciu aplikované voliteľné transformátory, ktoré boli vstupným parametrom pre vytvorenie inštancie prediktora. Každý transformátor dedí správanie od triedy \emph{Sequence}. Sekvencia je zaobaľovaná transformátormi postupne ako boli definované vo vstupnom parametry. Z týchto dôvodov je možné voliť ich kombinácie, poradie poprípadne ich úplne vynechať. Postup obaľovania je možné vidieť vo figúre \ref{code:sequence-wrapping}.
+
+\subsection{Evaluácia predikcie}
+Zachytením udalosti typu \emph{mousemove.sequence.end} vieme, že izolovaný pohyb, pre ktorý boli vykonané predikcie, je ukončený. Keďže už poznáme reálny destinačný bod a cieľ interakcie tohto pohybu, vieme vyhodnotiť presnosť predikcie. Pre každú predikciu vykonanú počas tohto pohybu, pričom počet predikcií závisí od počtu vrcholov rýchlostí, je vykonaná evaluácia. Ak regresor vypočítal dĺžku pohybu s veľkou chybou, je celý model pretrenovaný s novým poznatkom o vzťahu medzi spomínanými charakteristikami pohybu a jeho celkovou dĺžkou. V súčasnej implementácii vzhľadom na množstvo pohybov vykonaný v rámci experimentov nie je vykonávané žiadne posúdenie, či bola predickia dobrá alebo zlá, a teda model je pretrenovaný s každou novou hodnotou.

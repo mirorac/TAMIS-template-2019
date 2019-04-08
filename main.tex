@@ -1,0 +1,78 @@
+% SETTINGS - LATEX
+% to change name, title, supervisor etc. go to preamble/preamble.tex
+\newcommand{\myFontSize}[0] {12pt}
+\newcommand{\mySpacing}[0] {1.25}
+\newcommand{\myBibliography}[0] {bib/refs, appendices/refs1}
+
+%====== TLAC TLAC TLAC =======
+%ak sa bude tlacit iba na jednu stranu tak treba TWOSIDE dat na ONESIDE
+\documentclass[\myFontSize,a4paper,oneside,openright]{book}
+\include{preamble/preamble}
+
+\begin{document}
+
+% Minted
+% pygmentize -L styles
+%\usemintedstyle{autumn}
+
+% Title page
+\include{preamble/title}
+
+% Acknowledgements
+%\include{preamble/acknowledgements}
+
+% Annotation
+%\include{preamble/annotation}
+
+% Table of contents
+\setcounter{page}{1}
+\tableofcontents{}
+\newpage
+
+% List of listings
+%\listoffigures\newpage{}
+%\renewcommand\listoflistingscaption{List of Listings}
+%\listoflistings\newpage{}
+
+% References segment
+\begin{refsegment}
+\renewcommand{\figurename}{Fig.}
+\pagenumbering{arabic}
+
+% Introduction
+\input{content/intro}
+
+% analyza
+%\input{content/analyza}
+
+% navrh
+%\input{content/proposal}
+
+% vyhodnotenie
+%\input{content/eva}
+
+% zaver
+%\input{content/conclusion}
+
+% Bibliography
+\clearpage\null
+\printbibliography[heading=references,segment=\therefsegment,resetnumbers=true]
+
+\end{refsegment}
+
+% Appendix
+\appendix
+\renewcommand\appendixname{Appendix}
+\addtocontents{toc}{\protect\setcounter{tocdepth}{0}\cftpagenumbersoff{chapter}}
+
+%\include{appendices/tech-doc}
+
+%\include{appendices/plots}
+
+%\include{appendices/appendix1}
+
+%\clearpage\null
+
+%\include{appendices/cdrom}
+
+\end{document}
